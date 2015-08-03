@@ -163,6 +163,16 @@ sub deployMd5Resources{
 	# print $gc,"\n";
 }
 
+sub checkHelp{
+    my $force = @_;
+    if($force or grep{$_ eq "-help"}@ARGV){
+        print "Usage:\n"
+         . "genHash.pl <folder-name> <version-code>\n"
+         . "<folder-name>: usually a sub folder of current working directory\n"
+         . "<version-code>: must fit the regular expression of A.B.C\n";
+        exit
+    }
+}
 
 sub main {
     # Entry
@@ -170,18 +180,19 @@ sub main {
     if ( $#ARGV >= 1 && $ARGV[1] =~ qr/$pat/imxs ){
         $G_VER = $ARGV[1];
     } else {
-    	print $#ARGV,"\n";
-        printf STDERR "You need to specify a version to deploy\n";
-        exit -1;
+    	# print $#ARGV,"\n";
+        printf STDERR "You need to specify a version to deploy.\n\n";
+        checkHelp 1;
     }
 
-    die "target folder do not exist !\n" if not -d $ARGV[0];
     my $startRoot = $ARGV[0];
+    die "Target folder do not exist !\n" if not -d $startRoot;
     cleanMd5ResFolder;
-    deployMd5Resources($startRoot);
+    deployMd5Resources $startRoot;
 }
 
 # The only entry>>
+checkHelp;
 main;
 
 __END__
