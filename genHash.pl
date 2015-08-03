@@ -2,6 +2,8 @@
 #
 # Generate hash for all resource files
 # March 28th. 2o14
+# Revisited on August.3rd.2o15
+# This script is called by the master script<hash.pl>
 
 BEGIN { do './config.pl'; }
 
@@ -12,6 +14,7 @@ use warnings;
 use Cwd qw/getcwd/;
 use File::Path qw/mkpath/;
 use hashmod qw/hashOne/;
+use fileutils qw/getCopyFileCmd getDeleteFileCmd/;
 
 # Global configuration
 
@@ -22,98 +25,44 @@ our $G_VER_SVR_FILE_PATH;
 our $G_VER_VER_HAS_FILE_PATH;
 
 
-# Platform dependent !!!
-sub getCopyCmd{
-    my $full = shift // die "No full";
-    my $newFull = shift//die"No new full";
-
-    my $rv = '';
-    if( $^O eq 'linux'){
-        $rv = "cp -f \"$full\" \"$newFull\"";
-    } else {
-        $full    =~ s/\//\\/g;
-        $newFull =~ s/\//\\/g;
-        my $A = 'F';
-        $A = 'Y' if -f $newFull;
-        $rv = "echo $A | xcopy \"$full\" \"$newFull\""
-    }
-
-    ## 
-    $rv;
-}
-
-# Platform dependent !!!
-sub getDeleteFileCmd{
-    my $fileName = shift // die "no input name";
-    my $rv = '';
-    if( $^O eq 'linux' ){
-        $rv = "rm -rf \"$fileName\"";
-    } else {
-        $fileName =~ s/\//\\/g;
-        $rv = "rmdir \"$fileName\" /q/s";
-    }
-
-    $rv;
-}
-
-
 # Parameters
 # 
 sub walkNow{
-    my $baseNow = shift // die "no base";
-    my $dirNow = shift // die "no dir for now";
+    my $baseNow = shift // die "no base";   # $baseNow shall always ends with a slash. 
+    my $dirNow  = shift // die "no dir for now";
     my $pro_ref = shift // \&dummm;
-
     my @nextD;
     opendir my $cd, $dirNow or die "no open for \"$dirNow\"";
-
-    while( my $f = readdir $cd )
-    {
-        next if $f eq '.' or $f eq '..';
-        next if $f eq '.git';
-        next if $f eq '.gitignore';
-
+    while (my $f = readdir $cd)  {
+        next if grep{$f eq $_} qw/. .. .git .gitignore/;
         my $now = $dirNow . '/'. $f;
-
-        if(-d $now)
-        {
+        if(-d $now) {
             push @nextD, $now;
             next;
         }
-
         # Filter some files out
         if( $f !~ /\.pl$/imxs &&
-            $f !~ /\.pm$/imxs)
-        {
+            $f !~ /\.pm$/imxs) {
             #print $now,"\n";
             my $sub = substr($now, length($baseNow));
             $pro_ref->($sub, $now);
         }
     }
     closedir $cd;
-
-    #print "Site 100\n";
-    for(@nextD)
-    {
-        walkNow($baseNow, $_, $pro_ref);
-    }
+    walkNow($baseNow, $_, $pro_ref) for @nextD;
 }
 
 my $gc = 0;
 
-sub getMd5Name{
-    my $name = shift // die 'no origin name';
-    my $hashv = shift // die 'no hash string';
-
+sub getReplacedName{
+    my $name      = shift // die 'no origin name';
+    my $new_short = shift // die 'no hash string';
     my $suffix = '';
-    my $lpos = rindex($name, '.');
+    my $lpos  = rindex($name, '.');
     my $slpos = rindex($name, '/');
-    if($slpos < 0){
-        $slpos = rindex($name, '\\');
-    }
-
-    $suffix = substr($name, $lpos) if $lpos>=0 and ($slpos < 0 or $slpos < $lpos);
-    return $hashv . $suffix;
+    $slpos    = rindex($name, '\\') if $slpos < 0;
+    $suffix   = substr($name, $lpos) if $lpos>=0 and ($slpos < 0 or $slpos < $lpos);
+    return $new_short . $suffix;
 }
 
 sub processOneRes{
@@ -121,20 +70,15 @@ sub processOneRes{
 	my $full = shift // die 'no full path name';
 	my $hashv = hashOne $full;
 	my $size = -s $full;
-	#print "$name\t$hashv\t$size\n";
+    $size = sprintf "%10d", $size;
 	$gc++;
-
-    # 
-    my $newName = getMd5Name $name, $hashv;
+    my $newName = getReplacedName $name, $hashv;
     #my $newFull = $G_DEPLOY_ROOT . '/' . $G_VER . '/' . $newName;
     my $newFull = $G_DEPLOY_ROOT . '/' . $newName;	#No more version file. 
-
-    #Platform dependent
-    my $cmd = getCopyCmd($full, $newFull);
+    my $cmd = getCopyFileCmd($full, $newFull);
     `$cmd`;
     die "cannot copy $full" if $?;
-
-    print "$name\t$newName\t$size\n";
+    print "$newName\t$size\t$name\n";
 }
 
 sub cleanMd5ResFolder {
@@ -164,7 +108,7 @@ sub deployMd5Resources{
 }
 
 sub checkHelp{
-    my $force = @_;
+    my ($force) = @_;
     if($force or grep{$_ eq "-help"}@ARGV){
         print "Usage:\n"
          . "genHash.pl <folder-name> <version-code>\n"

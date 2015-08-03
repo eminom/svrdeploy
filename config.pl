@@ -5,7 +5,7 @@ my $_SvrRoot;
 if('linux' eq $^O){
 	$_SvrRoot = '/rsvr/events/';
 } else {
- 	$_SvrRoot = 'E:/node/svr/events/';
+ 	$_SvrRoot = 'H:/TMP1/events/';
  }
 
  my $interm = '/resfolder/';

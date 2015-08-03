@@ -108,7 +108,7 @@ sub main {
 	print "generating table at " . $destHashFilePath, "\n";
 
 	my $sourceDir = getcwd() . '/' . $resFolderName;
-	die "Resource folder is not there\n" if not -d $sourceDir;
+	die "Resource folder is not there:$sourceDir\n" if not -d $sourceDir;
 	system("perl genHash.pl \"$sourceDir\" $versionString > " . $destHashFilePath);
 	#print $?;
 	die "error generating table" if $?;

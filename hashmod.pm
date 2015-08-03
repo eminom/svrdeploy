@@ -7,7 +7,7 @@ use warnings;
 use base qw/Exporter/;
 use Digest::MD5 qw/md5 md5_hex/;
 
-our @EXPORT_OK   = qw/hashOne/;
+our @EXPORT_OK = qw/hashOne/;
 
 sub hashOne{
 	my $full = shift // die 'no input file';
