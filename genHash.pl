@@ -13,7 +13,7 @@ use warnings;
 
 use Cwd qw/getcwd/;
 use File::Path qw/mkpath/;
-use hashmod qw/hashOne/;
+use hashmod qw/hashOne hashXX/;
 use fileutils qw/getCopyFileCmd getDeleteFileCmd/;
 
 # Global configuration
@@ -69,6 +69,7 @@ sub processOneRes{
 	my $name = shift // die 'no file name';
 	my $full = shift // die 'no full path name';
 	my $hashv = hashOne $full;
+    my $xxhash= hashXX $full;
 	my $size = -s $full;
     $size = sprintf "%10d", $size;
 	$gc++;
@@ -78,7 +79,7 @@ sub processOneRes{
     my $cmd = getCopyFileCmd($full, $newFull);
     `$cmd`;
     die "cannot copy $full" if $?;
-    print "$newName\t$size\t$name\n";
+    print "$newName\t$size\t$xxhash\t$name\n";
 }
 
 sub cleanMd5ResFolder {
