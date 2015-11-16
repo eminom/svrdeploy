@@ -6,7 +6,7 @@ use 5.010;
 use warnings;
 use base qw/Exporter/;
 use Digest::MD5 qw/md5 md5_hex/;
-use Digest::xxHash qw[xxhash xxhash_hex];
+#use Digest::xxHash qw[xxhash xxhash_hex];
 use Digest::xxHash qw[xxhash32 xxhash32_hex];
 our @EXPORT_OK = qw/hashOne hashXX/;
 
