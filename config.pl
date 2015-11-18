@@ -2,8 +2,8 @@
 # Global config
 my $_SvrRoot;
 
-if('linux' eq $^O){
-	$_SvrRoot = '/rsvr/events/';
+if('linux' eq $^O || 'darwin' eq $^O){
+	$_SvrRoot = "$ENV{HOME}/Major/events/";
 } else {
  	$_SvrRoot = 'F:/JokerStuff/AppX/events/';
  }

@@ -35,7 +35,7 @@ my $_cdnuri  = 'http://127.0.0.1:12000';
 
 sub getDestHashv{
 	my $s = $G_DEPLOY_HASH;
-	if( $^O eq 'linux'){
+	if( $^O eq 'linux' || $^O eq 'darwin'){
 		## Hello
 	} else {
 		$s =~ s/\//\\/g;

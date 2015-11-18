@@ -15,7 +15,7 @@ sub getCopyFileCmd{
     my $full    = shift // die "No full";
     my $newFull = shift // die"No new full";
     my $rv;
-    if ( $^O eq 'linux') {
+    if ( $^O eq 'linux' || $^O eq 'darwin') {
         $rv = "cp -f \"$full\" \"$newFull\"";
     } else {
         $full    =~ s/\//\\/g;
