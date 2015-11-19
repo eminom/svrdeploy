@@ -29,9 +29,18 @@ use Cwd qw/getcwd/;
 use hashmod qw/hashOne/;
 
 # Global configuration
-
-my $_basever = '1.3.00';	# Base version
-my $_cdnuri  = 'http://127.0.0.1:12000';
+my $_basever = '1.0.0';	# Base version
+sub _retrieveLocalIP{
+	my @res = `node get_local_ip`;
+	die "node execution failed" if $?;
+	if(@res){
+		chomp($res[0]);
+		return $res[0];
+	}
+	'http://127.0.0.1:12000';
+}
+my $_cdnuri = _retrieveLocalIP;
+#print "Alright<$_cdnuri>\n";
 
 sub getDestHashv{
 	my $s = $G_DEPLOY_HASH;
